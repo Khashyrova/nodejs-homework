@@ -1,7 +1,11 @@
+const fs = require("fs/promises");
 const path = require("path");
 const { nanoid } = require("nanoid");
 
 const contactsPath = path.join(__dirname, "contacts.json");
+const saveChanges = async (arr) => {
+  return await fs.writeFile(contactsPath, JSON.stringify(arr, null, 2));
+};
 
 const listContacts = async () => {
   const data = await fs.readFile(contactsPath);
@@ -10,38 +14,42 @@ const listContacts = async () => {
 
 const getContactById = async (contactId) => {
   const contacts = await listContacts();
-  const result = contacts.find((contact) => contact.id === contactId);
-  return result;
+  const contact =
+    (await contacts.find((item) => item.id === contactId)) || null;
+
+  return contact;
 };
 
 const removeContact = async (contactId) => {
   const contacts = await listContacts();
-  const index = contacts.findIndex((contact) => contact.id === contactId);
-  if (index === -1) {
-    return null;
-  }
-  const removedContact = contacts.splice(index, 1);
-  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-  return removedContact;
+  const index = contacts.findIndex((item) => item.id === contactId);
+  if (index === -1) return null;
+  const deletedContact = contacts.splice(index, 1);
+  await saveChanges(contacts);
+
+  return deletedContact[0];
 };
 
 const addContact = async (body) => {
   const contacts = await listContacts();
-  const newContact = { id: nanoid(), ...data };
+  const newContact = {
+    id: nanoid(),
+    ...body,
+  };
   contacts.push(newContact);
-  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+  await saveChanges(contacts);
+
   return newContact;
 };
 
 const updateContact = async (contactId, body) => {
   const contacts = await listContacts();
-  const index = contacts.findIndex((item) => item.contactId === contactId);
-  if (index === -1) {
-    return null;
-  }
-  contacts[index] = { contactId, ...body };
-  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-  return contacts[index];
+  const index = contacts.findIndex((item) => item.id === contactId);
+  if (index === -1) return null;
+  const updatedContact = Object.assign({ ...contacts[index], ...body });
+  contacts[index] = updatedContact;
+  await saveChanges(contacts);
+  return updatedContact;
 };
 
 module.exports = {

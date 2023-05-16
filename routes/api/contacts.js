@@ -1,40 +1,18 @@
 const express = require("express");
-const contacts = require("../../models/contacts");
+const {
+  listContacts,
+  getContactById,
+  addContact,
+  updateContact,
+  removeContact,
+} = require("../../models/contacts");
 const { nanoid } = require("nanoid");
-const Joi = require("joi");
-
-const newContactSchema = Joi.object({
-  id: Joi.string(),
-
-  name: Joi.string().pattern(new RegExp("^[a-zA-Z]+ [a-zA-Z]+$")).required(),
-
-  email: Joi.string()
-    .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
-    .required(),
-
-  phone: Joi.string()
-    .pattern(new RegExp("^[+]?[(]?[0-9]{3}[)]?[-s.]?[0-9]{3}[-s.]?[0-9]{4,6}$"))
-    .required(),
-});
-
-const newInfoSchema = Joi.object({
-  name: Joi.string().pattern(new RegExp("^[a-zA-Z]+ [a-zA-Z]+$")),
-
-  email: Joi.string().email({
-    minDomainSegments: 2,
-    tlds: { allow: ["com", "net"] },
-  }),
-
-  phone: Joi.string().pattern(
-    new RegExp("^[+]?[(]?[0-9]{3}[)]?[-s.]?[0-9]{3}[-s.]?[0-9]{4,6}$")
-  ),
-}).nand("name", "email", "phone");
-
+const { newInfoSchema, newContactSchema } = require("../../helpers/Validate");
 const router = express.Router();
 
 router.get("/", async (req, res, next) => {
   try {
-    const result = await contacts.listContacts();
+    const result = await listContacts();
     res.json(result);
   } catch (error) {
     next(error);
@@ -44,7 +22,7 @@ router.get("/", async (req, res, next) => {
 router.get("/:contactId", async (req, res, next) => {
   try {
     const id = req.params.contactId;
-    const result = await contacts.getContactById(id);
+    const result = await getContactById(id);
     if (!result) {
       res.status(404).json({ message: "Not found contact with that it." });
     }
@@ -60,11 +38,11 @@ router.get("/:contactId", async (req, res, next) => {
 router.delete("/:contactId", async (req, res, next) => {
   try {
     const id = req.params.contactId;
-    const myContact = await contacts.getContactById(id);
+    const myContact = await getContactById(id);
     if (!myContact) {
       res.status(404).json({ message: "Not found contact with that it." });
     } else {
-      await contacts.removeContact(id);
+      await removeContact(id);
       res.json({
         status: "success",
         code: "200",
@@ -88,7 +66,7 @@ router.post("/", async (req, res, next) => {
       res.status(400).json({ message: "Missing required field." });
     }
     const newContact = isValid.value;
-    await contacts.addContact(newContact);
+    await addContact(newContact);
     res.json({
       status: "success",
       code: "200",
@@ -109,7 +87,7 @@ router.put("/:contactId", async (req, res, next) => {
     });
     const updContact = isValid.value;
     if (!isValid.error) {
-      const newContact = await contacts.updateContact(id, updContact);
+      const newContact = await updateContact(id, updContact);
       res.json({
         status: "success",
         code: "200",
