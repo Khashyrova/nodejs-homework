@@ -1,6 +1,6 @@
-const contactsService = require("../../models/contacts");
-const HttpError = require("../../helpers/HttpError");
-const { newInfoSchema } = require("../../helpers/Validate");
+const contactsService = require("../models/contacts");
+const HttpError = require("../helpers/HttpError");
+const { newInfoSchema } = require("../helpers/Validate");
 
 const getContacts = async (_, res, next) => {
   try {
