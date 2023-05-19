@@ -1,6 +1,6 @@
 const contactsService = require("../models/contacts");
+
 const HttpError = require("../helpers/HttpError");
-const { newInfoSchema } = require("../helpers/Validate");
 
 const getContacts = async (_, res, next) => {
   try {
@@ -19,7 +19,8 @@ const getContactById = async (req, res, next) => {
     const Id = req.params.contactId;
     const contactById = await contactsService.getContactById(Id);
 
-    if (!contactById) throw HttpError(404, `Not found`);
+    if (!contactById)
+      throw HttpError(404, `Contact with this ID ${Id} not found`);
 
     res.json(contactById);
   } catch (error) {
@@ -32,7 +33,10 @@ const removeContact = async (req, res, next) => {
     const Id = req.params.contactId;
     const deletedContact = await contactsService.removeContact(Id);
 
-    if (!deletedContact) throw HttpError(404, `Not found`);
+    if (!deletedContact)
+      throw HttpError(404, `Contact with this ID ${Id} not found`);
+
+    // res.status(200).json(deletedContact);
     res.status(200).json({ message: "Contact deleted" });
   } catch (error) {
     next(error);
@@ -53,13 +57,12 @@ const updateContact = async (req, res, next) => {
   try {
     if (Object.keys(req.body).length === 0)
       throw HttpError(400, "Missing fields");
-    const { error } = newInfoSchema.validate(req.body);
-    if (error) throw HttpError(404, error.message);
 
     const Id = req.params.contactId;
     const updatedContact = await contactsService.updateContact(Id, req.body);
 
-    if (!updatedContact) throw HttpError(404, `Not found`);
+    if (!updatedContact)
+      throw HttpError(404, `Contact with this ID ${Id} not found`);
 
     res.status(200).json(updatedContact);
   } catch (error) {

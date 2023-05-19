@@ -6,19 +6,22 @@ const {
   removeContact,
   updateContact,
 } = require("../../controllers/contactControllers");
+const validateBody = require("../../middlewares/ValidateData");
+const {
+  contactAddSchema,
+  contactUpdateSchema,
+} = require("../../helpers/ContactValidate");
 
-const { newContactSchema, newInfoSchema } = require("../../helpers/Validate");
-const { validateData } = require("../../middlewares/ValidateData");
 const router = express.Router();
 
 router.get("/", getContacts);
 
 router.get("/:contactId", getContactById);
 
-router.post("/", validateData(newContactSchema), addContact);
+router.post("/", validateBody(contactAddSchema), addContact);
 
 router.delete("/:contactId", removeContact);
 
-router.put("/:contactId", validateData(newInfoSchema), updateContact);
+router.put("/:contactId", validateBody(contactUpdateSchema), updateContact);
 
 module.exports = router;
