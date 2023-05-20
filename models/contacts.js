@@ -4,10 +4,6 @@ const nanoid = require("nanoid");
 
 const contactsPath = path.join(__dirname, "contacts.json");
 
-const saveChanges = async (arr) => {
-  return await fs.writeFile(contactsPath, JSON.stringify(arr, null, 2));
-};
-
 const listContacts = async () => {
   const data = await fs.readFile(contactsPath);
   return JSON.parse(data);
@@ -15,20 +11,17 @@ const listContacts = async () => {
 
 const getContactById = async (contactId) => {
   const contacts = await listContacts();
-  const contact =
-    (await contacts.find((item) => item.id === contactId)) || null;
-
+  const contact = contacts.find((item) => item.id === contactId) || null;
   return contact;
 };
 
 const removeContact = async (contactId) => {
   const contacts = await listContacts();
-  const index = contacts.findIndex((item) => item.id === contactId);
-  if (index === -1) return null;
-  const deletedContact = contacts.splice(index, 1);
-  await saveChanges(contacts);
-
-  return deletedContact[0];
+  const i = contacts.findIndex((item) => item.id === contactId);
+  if (i === -1) return null;
+  const reContact = contacts.splice(i, 1);
+  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+  return reContact[0];
 };
 
 const addContact = async (body) => {
@@ -38,19 +31,17 @@ const addContact = async (body) => {
     ...body,
   };
   contacts.push(newContact);
-  await saveChanges(contacts);
-
+  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
   return newContact;
 };
 
 const updateContact = async (contactId, body) => {
   const contacts = await listContacts();
-  const index = contacts.findIndex((item) => item.id === contactId);
-  if (index === -1) return null;
-  const updatedContact = Object.assign({ ...contacts[index], ...body });
-  contacts[index] = updatedContact;
-  await saveChanges(contacts);
-  return updatedContact;
+  const i = contacts.findIndex((item) => item.id === contactId);
+  if (i === -1) return null;
+  contacts[i] = { ...contacts[i], ...body };
+  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+  return contacts[i];
 };
 
 module.exports = {
