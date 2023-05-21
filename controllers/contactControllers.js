@@ -24,16 +24,17 @@ const addContacts = async (req, res, next) => {
 };
 
 const updateContactsById = async (req, res, next) => {
-  if (Object.keys(req.body).length !== 0) {
-    const id = req.params.contactId;
-    const contact = await contactsService.updateContact(id, req.body);
-
-    if (!contact) {
-      throw HttpError(404, "Not found");
-    }
-
-    res.status(201).json(contact);
+  if (Object.keys(req.body).length === 0) {
+    throw HttpError(400, "Missing fields");
   }
+  const id = req.params.contactId;
+  const contact = await contactsService.updateContact(id, req.body);
+
+  if (!contact) {
+    throw HttpError(404, "Not found");
+  }
+
+  res.status(201).json(contact);
 };
 
 const deletContactsById = async (req, res, next) => {
