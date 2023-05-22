@@ -3,6 +3,7 @@ const {
   getContacts,
   getContactsById,
   addContacts,
+  validateEmptyBody,
   updateContactsById,
   deletContactsById,
 } = require("../../controllers/contactControllers");
@@ -24,6 +25,7 @@ router.delete("/:contactId", deletContactsById);
 
 router.put(
   "/:contactId",
+  validateEmptyBody,
   validateBody(contactUpdateSchema),
   updateContactsById
 );

@@ -24,9 +24,9 @@ const addContacts = async (req, res, next) => {
 };
 
 const updateContactsById = async (req, res, next) => {
-  if (Object.keys(req.body).length === 0) {
-    throw HttpError(400, "Missing fields");
-  }
+  // if (Object.keys(req.body).length === 0) {
+  //   throw HttpError(400, "Missing fields");
+  // }
   const id = req.params.contactId;
   const contact = await contactsService.updateContact(id, req.body);
 
@@ -35,6 +35,11 @@ const updateContactsById = async (req, res, next) => {
   }
 
   res.status(201).json(contact);
+};
+const validateEmptyBody = async (req, res, next) => {
+  if (Object.keys(req.body).length === 0)
+    throw HttpError(400, "Missing fields");
+  next();
 };
 
 const deletContactsById = async (req, res, next) => {
@@ -56,4 +61,5 @@ module.exports = {
   addContacts: ctrlWrapper(addContacts),
   updateContactsById: ctrlWrapper(updateContactsById),
   deletContactsById: ctrlWrapper(deletContactsById),
+  validateEmptyBody: ctrlWrapper(validateEmptyBody),
 };
