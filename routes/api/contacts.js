@@ -13,9 +13,11 @@ const {
   contactSchema,
   contactUpdateFavoriteSchema,
 } = require("../../helpers/ContactValidate");
-const { isValidId, validateBody } = require("../../middlewares");
+const { isValidId, validateBody, authenticate } = require("../../middlewares");
 
 const router = express.Router();
+
+router.use(authenticate);
 
 router.get("/", getContacts);
 
