@@ -4,18 +4,19 @@ const { User } = require("../models/user");
 const { SECRET_KEY } = process.env;
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const contactControllers = require("./contactControllers");
 
 const register = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { email, password } = req.body;
 
   const user = await User.findOne({ email });
   if (user) {
     throw HttpError(409, "User with this email is already exists");
   }
   const hashPassword = await bcrypt.hash(password, 10);
-  const newUser = await User.create({ name, email, password: hashPassword });
-  res.status(201).json({ name: newUser.name, email: newUser.email });
+  const newUser = await User.create({ ...req.body, password: hashPassword });
+  res.status(201).json({
+    user: { email: newUser.email, subscription: newUser.subscription },
+  });
 };
 
 const login = async (req, res) => {
@@ -35,20 +36,33 @@ const login = async (req, res) => {
   };
   const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "1h" });
   await User.findByIdAndUpdate(user._id, { token });
-  res.json({ token: token });
+  res.json({
+    token: token,
+    user: { email: user.email, subscription: user.subscription },
+  });
 };
 const getCurrent = async (req, res, next) => {
-  const { name, email } = req.user;
+  const { email, subscription } = req.user;
+
   res.json({
-    name,
+    subscription,
     email,
   });
 };
 const logaut = async (req, res) => {
-  const { _id: id } = req.user;
+  const { id } = req.user;
   await User.findByIdAndUpdate(id, { token: "" });
-  res.json({
+  res.status(204).json({
     message: "Logaut successed",
+  });
+};
+const subscription = async (req, res) => {
+  const { _id, email } = req.user;
+  const result = await User.findByIdAndUpdate(_id, req.body, { new: true });
+
+  res.json({
+    email: result.email,
+    subscription: result.subscription,
   });
 };
 module.exports = {
@@ -56,4 +70,5 @@ module.exports = {
   login: ctrlWrapper(login),
   getCurrent: ctrlWrapper(getCurrent),
   logaut: ctrlWrapper(logaut),
+  subscription: ctrlWrapper(subscription),
 };
