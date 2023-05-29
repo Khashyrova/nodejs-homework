@@ -10,7 +10,7 @@ const register = async (req, res) => {
 
   const user = await User.findOne({ email });
   if (user) {
-    throw HttpError(409, "User with this email is already exists");
+    throw HttpError(409, "Email in use");
   }
   const hashPassword = await bcrypt.hash(password, 10);
   const newUser = await User.create({ ...req.body, password: hashPassword });
@@ -23,12 +23,12 @@ const login = async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
   if (!user) {
-    throw HttpError(401, "Invalid credentials");
+    throw HttpError(401, "Email or password is wrong");
   }
 
   const passwordCompareResult = await bcrypt.compare(password, user.password);
   if (!passwordCompareResult) {
-    throw HttpError(401, "Invalid credentials");
+    throw HttpError(401, "Email or password is wrong");
   }
 
   const payload = {
@@ -44,12 +44,12 @@ const login = async (req, res) => {
 const getCurrent = async (req, res, next) => {
   const { email, subscription } = req.user;
 
-  res.json({
+  res.status(200).json({
     subscription,
     email,
   });
 };
-const logaut = async (req, res) => {
+const logout = async (req, res) => {
   const { id } = req.user;
   await User.findByIdAndUpdate(id, { token: "" });
   res.status(204).json({
@@ -69,6 +69,6 @@ module.exports = {
   register: ctrlWrapper(register),
   login: ctrlWrapper(login),
   getCurrent: ctrlWrapper(getCurrent),
-  logaut: ctrlWrapper(logaut),
+  logout: ctrlWrapper(logout),
   subscription: ctrlWrapper(subscription),
 };

@@ -4,7 +4,7 @@ const {
   register,
   login,
   getCurrent,
-  logaut,
+  logout,
   subscription,
 } = require("../../controllers/userController");
 const { validateBody, authenticate } = require("../../middlewares");
@@ -20,7 +20,7 @@ router.post("/login", validateBody(userLoginSchema), login);
 
 router.get("/current", authenticate, getCurrent);
 
-router.post("/logaut", authenticate, logaut);
+router.post("/logout", authenticate, logout);
 
 router.patch("/subscription", validateBody(subscriptionSchema), subscription);
 
